@@ -1,6 +1,4 @@
-/***************************************************************************
-
-  BSD license, all text above must be included in any redistribution
+/**************************************************************************
 
  ** MOSI - pin 11
  ** MISO - pin 12
@@ -15,16 +13,14 @@
 #include "Adafruit_CCS811.h"
 #include <SPI.h>
 #include <SD.h>
-
 const int chipSelect = 4;
-
 Adafruit_CCS811 ccs;
+File dataFile;
 
 void setup() {
   Serial.begin(9600);
 
   Serial.println("CCS811 test");
-
   if(!ccs.begin()){
     Serial.println("Failed to start sensor! Please check your wiring.");
     while(1);
@@ -39,6 +35,9 @@ void setup() {
     while (1);
   }
   Serial.println("card initialized.");
+
+  dataFile = SD.open("datalog.txt", FILE_WRITE);
+
 }
 
 void loop() {
@@ -49,18 +48,23 @@ void loop() {
       dataString += ", ";
       dataString += String(ccs.geteCO2());
       dataString += ", ";
-     dataString += String(ccs.getTVOC());
+      dataString += String(ccs.getTVOC());
+
+      Serial.println(dataString);
+
+      if (dataFile) {
+        dataFile.println(dataString);
+        dataFile.flush();
+        //dataFile.close();
+      }
+
+
       
     }
     else{
       Serial.println("ERROR!");
       while(1);
     }
-  }
-  File dataFile = SD.open("datalog.txt", FILE_WRITE);
-  if (dataFile) {
-    dataFile.println(dataString);
-    dataFile.close();
   }
   delay(1000);
 }
